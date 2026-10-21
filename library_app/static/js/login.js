@@ -63,7 +63,7 @@ function setupLogin(formId, usernameId, passwordId, apiUrl) {
                 localStorage.setItem("access_token", data.access);
                 localStorage.setItem("refresh_token", data.refresh);
 
-                window.location.href = "/home/member/";
+                window.location.href = "/api/home/member/";
             } else {
                 alert("Invalid credentials");
             }
