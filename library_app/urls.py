@@ -1,8 +1,11 @@
 from rest_framework.routers import DefaultRouter
 from .views import (BookListViewSet, MemberListViewSet, LoanListViewSet, 
                     ReservationListViewSet, LibrarianListViewSet, FineListViewSet,
-                    MemberLogin, LibrarianLogin)
+                    MemberLogin, LibrarianLogin,
+                    librarian_register, member_login, member_register, librarian_login, home)
 from django.urls import path, include
+
+from library_app import views
 
 router = DefaultRouter()
 router.register(r'books', BookListViewSet, basename = 'book')
@@ -22,6 +25,10 @@ router.register(r'fines', FineListViewSet, basename = 'fine')
 # # urlpatterns = router.urls
 
 urlpatterns = [
-    path('member-login/', MemberLogin, name='member-login'),
-    path('librarian-login/', LibrarianLogin, name='librarian-login'),
+    path('member-login/', member_login, name='member-login'),
+    path('librarian-login/', librarian_login, name='librarian-login'),
+    path('member-register/', member_register, name='member-register'),
+    path('librarian-register/', librarian_register, name='librarian-register'),
+    path('home/member/', views.home, name='home'),
+    path('login/', views.login, name='login')
 ] + router.urls

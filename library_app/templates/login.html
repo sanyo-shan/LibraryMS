@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="login-wrapper">
+
+    <!-- Member Login -->
+    <div class="card">
+        <h2>Member Login</h2>
+
+        <form id="member-login-form">
+            {% csrf_token %}
+
+            <label for="member-username">Username</label>
+            <input type="text" id="member-username" name="username" required>
+
+            <label for="member-password">Password</label>
+            <input type="password" id="member-password" name="password" required>
+
+            <button type="submit">Login</button>
+
+            <p class="signup-link">
+                
+                <a href="{% url 'member-register' %}">
+                    Sign up as a new user
+                </a>
+            </p>
+        </form>
+    </div>
+
+    <!-- Librarian Login -->
+    <div class="card">
+        <h2>Librarian Login</h2>
+        <form id="librarian-login-form">
+            {% csrf_token %}
+
+            <label for="librarian-username">Username</label>
+            <input type="text" id="librarian-username" name="username" required>
+
+            <label for="librarian-password">Password</label>
+            <input type="password" id="librarian-password" name="password" required>
+
+            <button type="submit">Login</button>
+
+            <p class="signup-link">
+                <a href="{% url 'librarian-register' %}">
+                    Sign up as a new librarian
+                </a>
+            </p>
+        </form>
+    </div>
+
+    {% load static %}
+    <script src="{% static 'js/login.js' %}"></script>
+</div>
+
+{% endblock %}

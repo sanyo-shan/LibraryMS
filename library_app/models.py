@@ -43,6 +43,7 @@ class Loan(models.Model):
     def __str__(self):
         return f"{self.book.title} loaned to {self.member.first_name} {self.member.last_name}"
 
+# Addons
 class Reservation(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
@@ -52,13 +53,6 @@ class Reservation(models.Model):
 
 class Librarian(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    can_add_book = models.BooleanField(default=True)
-    can_edit_book = models.BooleanField(default=True)
-    can_remove_book = models.BooleanField(default=True)
-    can_manage_members = models.BooleanField(default=True)
-    can_manage_loans = models.BooleanField(default=True)
-    can_manage_reservations = models.BooleanField(default=True)
 
 class Fine(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)

@@ -19,12 +19,11 @@ class MemberSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=128, required=True, write_only=True)
     first_name = serializers.CharField(source='user.first_name', max_length=30, required=True)
     last_name = serializers.CharField(source='user.last_name', max_length=30, required=False)
-    is_staff = serializers.BooleanField(source='user.is_staff', default=False)
     
     class Meta:
         model = Member
         fields = ['id', 'username', 'first_name', 'last_name', 'phone_number', 
-                  'membership_date', 'fines_due', 'is_staff', 'password']
+                  'membership_date', 'fines_due', 'password']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
@@ -33,7 +32,6 @@ class MemberSerializer(serializers.ModelSerializer):
             password=validated_data.pop('password'),
             first_name=user_data.get('first_name', ''),
             last_name=user_data.get('last_name', ''),
-            is_staff=user_data.get('is_staff', False)
         )
 
         member = Member.objects.create(user=user, **validated_data)
@@ -50,6 +48,7 @@ class LoanSerializer(serializers.ModelSerializer):
     #         raise serializers.ValidationError("Returned date must be set if the book is marked as returned.")
     #     return data
 
+# Addon
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
@@ -67,8 +66,7 @@ class LibrarianSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Librarian
-        fields = ['id', 'user', 'can_add_book', 'can_edit_book', 'can_remove_book', 'can_manage_members', ''
-        'can_manage_loans', 'can_manage_reservations', 'username', 'password']
+        fields = ['id', 'user', 'username', 'password']
 
     def create(self, validated_data):
         user_data = validated_data.pop('user')
@@ -83,4 +81,87 @@ class FineSerializer(serializers.ModelSerializer):
         model = Fine
         fields = ['id', 'member', 'amount', 'issued_date', 'paid_flag']
 
-    
+
+# ********* Front Page Serializers *********
+
+class MemberRegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128, write_only=True)
+    first_name = serializers.CharField(max_length=30)
+    last_name = serializers.CharField(max_length=30)
+
+    def username_exists(self, username):
+        return User.objects.filter(username=username).exists()
+
+    def password_is_valid(self, password):
+        return len(password) >= 8  # Example validation, adjust as needed
+
+    def create(self, validated_data):
+        username = validated_data.get('username')
+        password = validated_data.get('password')
+        first_name = validated_data.get('first_name')
+        last_name = validated_data.get('last_name')
+
+        user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name)
+        user.set_password(password)
+        member = Member.objects.create(user=user)
+        member.save()
+        return member
+
+class LibrarianRegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128, write_only=True)
+    first_name = serializers.CharField(max_length=30)
+    last_name = serializers.CharField(max_length=30)
+
+    def username_exists(self, username):
+        return User.objects.filter(username=username).exists()
+
+    def password_is_valid(self, password):
+        return len(password) >= 8  # Example validation, adjust as needed
+
+    def create(self, validated_data):
+        username = validated_data.get('username')
+        password = validated_data.get('password')
+        first_name = validated_data.get('first_name')
+        last_name = validated_data.get('last_name')
+
+        user = User.objects.create_user(username=username, password=password, first_name=first_name, last_name=last_name, is_staff=True)
+        user.set_password(password)
+        librarian = Librarian.objects.create(user=user)
+        librarian.save()
+        return librarian
+
+class MemberLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+
+        try:
+            member = Member.objects.get(user__username=username)
+            if not member.user.check_password(password):
+                raise serializers.ValidationError("Invalid credentials")
+        except Member.DoesNotExist:
+            raise serializers.ValidationError("Member not found")
+
+        return data
+
+class LibrarianLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+
+        try:
+            librarian = Librarian.objects.get(user__username=username)
+            if not librarian.user.check_password(password):
+                raise serializers.ValidationError("Invalid credentials")
+        except Librarian.DoesNotExist:
+            raise serializers.ValidationError("Librarian not found")
+
+        return data

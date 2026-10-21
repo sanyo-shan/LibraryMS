@@ -7,8 +7,6 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
-
-
 # Create your views here.
 
 class BookListViewSet(viewsets.ModelViewSet):
@@ -93,3 +91,74 @@ class FineListViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Fine.objects.all()
         return queryset
+
+
+# ************ New Code **************
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import (MemberLoginSerializer, LibrarianLoginSerializer,
+                            MemberRegisterSerializer, LibrarianRegisterSerializer)
+from django.contrib.auth.models import User
+
+@api_view(['GET'])
+def login(request):
+    return render(request, 'login.html')
+
+@api_view(['POST']) # Allows API to accept POST requests
+def member_login(request):
+    if request.method == 'POST': 
+        data = request.data # Contains the JSON sent by the client
+        memberLoginSerializer = MemberLoginSerializer(data=data) # Passes the JSON to the serializer for validation
+        if memberLoginSerializer.is_valid():
+            username = memberLoginSerializer.validated_data['username'] # Retrieves the validated username
+            member = Member.objects.get(user__username=username) # Retrieves the member object from the database
+            refresh = RefreshToken.for_user(member.user) # Generates a JWT refresh token for the member
+            return Response({
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token), # Generates a JWT access token for the member
+                    }, status=status.HTTP_200_OK)
+            # return render(request, 'home.html', {'member': member}) # Renders the home page with the member object
+
+    return Response(memberLoginSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def librarian_login(request):
+    if request.method == 'POST':
+        data = request.data
+        librarianLoginSerializer = LibrarianLoginSerializer(data=data)
+        if librarianLoginSerializer.is_valid():
+            username = librarianLoginSerializer.validated_data['username']
+            librarian = Librarian.objects.get(user__username=username)
+            refresh = RefreshToken.for_user(librarian.user)
+            return Response({
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }, status=status.HTTP_200_OK)
+
+    return Response(librarianLoginSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def member_register(request):
+    if request.method == 'POST':
+        data = request.data
+        memberRegisterSerializer = MemberRegisterSerializer(data=data)
+        if memberRegisterSerializer.is_valid():
+            memberRegisterSerializer.save() # Calls the create method in the serializer to create a new member
+            return Response({'message': 'Member registered successfully'}, status=status.HTTP_201_CREATED)
+
+        return Response(memberRegisterSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def librarian_register(request):
+    if request.method == 'POST':
+        data = request.data
+        librarianRegisterSerializer = LibrarianRegisterSerializer(data=data)
+        if librarianRegisterSerializer.is_valid():
+            librarianRegisterSerializer.save() # Calls the create method in the serializer to create a new librarian
+            return Response({'message': 'Librarian registered successfully'}, status=status.HTTP_201_CREATED)
+
+        return Response(librarianRegisterSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def home(request):
+    return render(request, 'home.html')
