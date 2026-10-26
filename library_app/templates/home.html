@@ -1,11 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-    </head>
-    <body>
-        <h1>Welcome to the Library App</h1>
-    </body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Library Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="library-container">
+
+    <div class="page-header">
+        <h1>Library Management System</h1>
+        <p>Search and checkout books from the library catalog.</p>
+    </div>
+
+    <div class="navbar">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn">
+            Logout
+        </button>
+    </form>
+    </div>
+
+    <div class="search-section">
+
+        <div class="filter-group">
+            <label for="title">Book Title</label>
+            <input type="text" id="title" placeholder="Enter book title">
+        </div>
+
+        <div class="filter-group">
+            <label for="author">Author</label>
+            <input type="text" id="author" placeholder="Enter author name">
+        </div>
+
+        <div class="filter-group">
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="">All Categories</option>
+
+                {% for category in categories %}
+                <option value="{{ category.id }}">
+                    {{ category.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="filter-group button-group">
+            <button id="searchBtn" class="search-btn">
+                Search
+            </button>
+        </div>
+
+    </div>
+
+    <div class="results-section">
+
+        <table class="book-table">
+            <thead>
+                <tr>
+                    <th>Book Title</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Available Copies</th>
+                </tr>
+            </thead>
+
+            <tbody id="bookTableBody">
+                <tr>
+                    <td colspan="4" class="no-data">
+                        Click Search to view books.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="{% static 'js/home.js' %}"></script>
+{% endblock %}

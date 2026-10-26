@@ -45,6 +45,9 @@ function setupLogin(formId, usernameId, passwordId, apiUrl) {
         const username = document.getElementById(usernameId).value;
         const password = document.getElementById(passwordId).value;
 
+        console.log(username)
+        console.log(password)
+
         try {
             const response = await fetch(apiUrl, {
                 method: "POST",
@@ -69,12 +72,14 @@ function setupLogin(formId, usernameId, passwordId, apiUrl) {
             }
         } catch (error) {
             alert("Something went wrong");
-            console.error(error);
+            console.error(error.message);
+            
         }
     });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("Inside function")
     setupLogin(
         "member-login-form",
         "member-username",
@@ -82,10 +87,10 @@ document.addEventListener("DOMContentLoaded", () => {
         "/api/member-login/"
     );
 
-    setupLogin(
-        "librarian-login-form",
-        "librarian-username",
-        "librarian-password",
-        "/api/librarian-login/"
-    );
+    // setupLogin(
+    //     "librarian-login-form",
+    //     "librarian-username",
+    //     "librarian-password",
+    //     "/api/librarian-login/"
+    // );
 });

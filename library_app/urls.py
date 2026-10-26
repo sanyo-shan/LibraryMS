@@ -30,5 +30,6 @@ urlpatterns = [
     path('member-register/', member_register, name='member-register'),
     path('librarian-register/', librarian_register, name='librarian-register'),
     path('home/member/', views.home, name='home'),
-    path('login/', views.login, name='login')
+    path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout')
 ] + router.urls

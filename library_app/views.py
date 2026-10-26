@@ -98,6 +98,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (MemberLoginSerializer, LibrarianLoginSerializer,
                             MemberRegisterSerializer, LibrarianRegisterSerializer)
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 
 @api_view(['GET'])
 def login(request):
@@ -129,15 +130,31 @@ def librarian_login(request):
             username = librarianLoginSerializer.validated_data['username']
             librarian = Librarian.objects.get(user__username=username)
             refresh = RefreshToken.for_user(librarian.user)
-            return Response({
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    }, status=status.HTTP_200_OK)
+            # return Response({
+            #             'refresh': str(refresh),
+            #             'access': str(refresh.access_token),
+            #         }, status=status.HTTP_200_OK)
+            response = Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_200_OK)
+
+            if response.status_code == 200:
+                # print(type(response))
+                tokens = response.data
+                print(response.data)
+
+                request.session['access_token'] = tokens['access']
+                request.session['refresh_token'] = tokens['refresh']
+
+                return redirect('home')  # Redirect to the home page after successful login
 
     return Response(librarianLoginSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
 def member_register(request):
+    if request.method == 'GET':
+        return render(request, 'memberRegister.html') # Renders the member registration page
     if request.method == 'POST':
         data = request.data
         memberRegisterSerializer = MemberRegisterSerializer(data=data)
@@ -147,8 +164,11 @@ def member_register(request):
 
         return Response(memberRegisterSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+@api_view(['POST', 'GET'])
 def librarian_register(request):
+    if request.method == "GET":
+        return render(request, 'librarianRegister.html')
+
     if request.method == 'POST':
         data = request.data
         librarianRegisterSerializer = LibrarianRegisterSerializer(data=data)
@@ -159,6 +179,14 @@ def librarian_register(request):
         return Response(librarianRegisterSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def home(request):
+    print(request.user)
+    # print(request.header)
+    print(request)
     return render(request, 'home.html')
+
+@api_view(['POST'])
+def logout(request):
+    request.session.flush()
+    return redirect('login')
